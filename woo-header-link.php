@@ -3,7 +3,7 @@
  * Plugin Name:       Woo Header Link
  * Plugin URI:        https://github.com/Deus73/woo-header-link
  * Description:       Zet een klikbare afbeelding of link in de linkerbovenhoek van je (WooCommerce) site. Opent in een nieuw venster en is volledig in te stellen via Instellingen.
- * Version:           1.2.0
+ * Version:           1.2.1
  * Author:            Deus Dust
  * Author URI:        https://github.com/Deus73
  * License:           GPL-2.0-or-later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Geen directe toegang.
 }
 
-define( 'WHL_VERSION', '1.2.0' );
+define( 'WHL_VERSION', '1.2.1' );
 define( 'WHL_FILE', __FILE__ );
 define( 'WHL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WHL_URL', plugin_dir_url( __FILE__ ) );
@@ -53,7 +53,7 @@ function whl_defaults() {
 		'fab_hide_mobile' => 0,
 		'fab_show_categories' => 1,
 		'fab_cat_max'         => 8,
-		'fab_order'           => array( 'cat', 'contact', 'cart', 'account', 'links', 'bobby' ),
+		'fab_order'           => array( 'cat', 'contact', 'locatie', 'cart', 'account', 'links', 'bobby' ),
 	);
 }
 
@@ -576,23 +576,37 @@ add_shortcode( 'header_link', 'whl_shortcode' );
  * ---------------------------------------------------------------------- */
 
 /**
+ * De standaardvolgorde van het zwevende menu.
+ *
+ * @return array
+ */
+function whl_fab_default_order() {
+	return array( 'cat', 'contact', 'locatie', 'cart', 'account', 'links', 'bobby' );
+}
+
+/**
  * De toegestane tokens voor de volgorde van het zwevende menu.
  *
  * @return array
  */
 function whl_fab_known_tokens() {
-	return array( 'cat', 'contact', 'cart', 'account', 'links', 'bobby' );
+	return whl_fab_default_order();
 }
 
 /**
- * Geef de ingestelde volgorde terug, aangevuld met ontbrekende tokens.
+ * Geef de ingestelde volgorde terug.
+ *
+ * Ontbrekende (nieuwe) tokens worden ingevoegd op hun standaardpositie, direct
+ * na hun voorganger. Zo komt "Onze Lokatie" ook bij bestaande installaties
+ * onder "Contact" te staan.
  *
  * @return array
  */
 function whl_get_fab_order() {
-	$opts   = whl_get_options();
-	$known  = whl_fab_known_tokens();
-	$stored = ( isset( $opts['fab_order'] ) && is_array( $opts['fab_order'] ) ) ? $opts['fab_order'] : array();
+	$opts    = whl_get_options();
+	$known   = whl_fab_known_tokens();
+	$default = whl_fab_default_order();
+	$stored  = ( isset( $opts['fab_order'] ) && is_array( $opts['fab_order'] ) ) ? $opts['fab_order'] : array();
 
 	$order = array();
 	foreach ( $stored as $token ) {
@@ -600,10 +614,23 @@ function whl_get_fab_order() {
 			$order[] = $token;
 		}
 	}
-	foreach ( $known as $token ) {
-		if ( ! in_array( $token, $order, true ) ) {
-			$order[] = $token;
+
+	foreach ( $default as $index => $token ) {
+		if ( in_array( $token, $order, true ) ) {
+			continue;
 		}
+
+		// Zoek de dichtstbijzijnde voorganger uit de standaardvolgorde.
+		$insert_at = count( $order );
+		for ( $i = $index - 1; $i >= 0; $i-- ) {
+			$pos = array_search( $default[ $i ], $order, true );
+			if ( false !== $pos ) {
+				$insert_at = $pos + 1;
+				break;
+			}
+		}
+
+		array_splice( $order, $insert_at, 0, array( $token ) );
 	}
 
 	return $order;
@@ -624,6 +651,12 @@ function whl_get_fab_items() {
 	$items['contact'] = array(
 		'label' => __( 'Contact', 'woo-header-link' ),
 		'url'   => home_url( '/contact/' ),
+	);
+
+	// Onze Lokatie: gewone pagina.
+	$items['locatie'] = array(
+		'label' => __( 'Onze Lokatie', 'woo-header-link' ),
+		'url'   => home_url( '/onze-lokatie/' ),
 	);
 
 	// Winkelwagen.
