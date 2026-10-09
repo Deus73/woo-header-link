@@ -1,0 +1,4 @@
+# Bestanden die niet in de installeerbare WordPress-ZIP horen.
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.github export-ignore
