@@ -3,7 +3,7 @@
  * Plugin Name:       Woo Header Link
  * Plugin URI:        https://github.com/Deus73/woo-header-link
  * Description:       Zet een klikbare afbeelding of link in de linkerbovenhoek van je (WooCommerce) site. Opent in een nieuw venster en is volledig in te stellen via Instellingen.
- * Version:           1.2.4
+ * Version:           1.2.5
  * Author:            Deus Dust
  * Author URI:        https://github.com/Deus73
  * License:           GPL-2.0-or-later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Geen directe toegang.
 }
 
-define( 'WHL_VERSION', '1.2.4' );
+define( 'WHL_VERSION', '1.2.5' );
 define( 'WHL_FILE', __FILE__ );
 define( 'WHL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WHL_URL', plugin_dir_url( __FILE__ ) );
@@ -53,7 +53,7 @@ function whl_defaults() {
 		'fab_hide_mobile' => 0,
 		'fab_show_categories' => 1,
 		'fab_cat_max'         => 8,
-		'fab_order'           => array( 'cat', 'contact', 'cart', 'account', 'links', 'bobby' ),
+		'fab_order'           => array( 'growset', 'kweeksets', 'cat', 'contact', 'cart', 'account', 'links', 'bobby' ),
 	);
 }
 
@@ -581,7 +581,7 @@ add_shortcode( 'header_link', 'whl_shortcode' );
  * @return array
  */
 function whl_fab_default_order() {
-	return array( 'cat', 'contact', 'cart', 'account', 'links', 'bobby' );
+	return array( 'growset', 'kweeksets', 'cat', 'contact', 'cart', 'account', 'links', 'bobby' );
 }
 
 /**
@@ -597,8 +597,8 @@ function whl_fab_known_tokens() {
  * Geef de ingestelde volgorde terug.
  *
  * Ontbrekende (nieuwe) tokens worden ingevoegd op hun standaardpositie, direct
- * na hun voorganger. Zo komt "Onze Lokatie" ook bij bestaande installaties
- * onder "Contact" te staan.
+ * na hun voorganger. Staat een nieuw token vooraan in de standaardvolgorde,
+ * dan komt het bovenaan.
  *
  * @return array
  */
@@ -621,7 +621,7 @@ function whl_get_fab_order() {
 		}
 
 		// Zoek de dichtstbijzijnde voorganger uit de standaardvolgorde.
-		$insert_at = count( $order );
+		$insert_at = null;
 		for ( $i = $index - 1; $i >= 0; $i-- ) {
 			$pos = array_search( $default[ $i ], $order, true );
 			if ( false !== $pos ) {
@@ -629,11 +629,51 @@ function whl_get_fab_order() {
 				break;
 			}
 		}
+		if ( null === $insert_at ) {
+			// Geen voorganger: vooraan de lijst als het token bovenaan hoort,
+			// anders achteraan.
+			$insert_at = ( 0 === $index ) ? 0 : count( $order );
+		}
 
 		array_splice( $order, $insert_at, 0, array( $token ) );
 	}
 
 	return $order;
+}
+
+/**
+ * Zoek de URL van een pagina op slug of titel.
+ *
+ * @param array  $slugs    Mogelijke slugs (zonder slash).
+ * @param array  $titles   Mogelijke paginatitels.
+ * @param string $fallback Pad dat gebruikt wordt als de pagina niet bestaat.
+ * @return string
+ */
+function whl_get_page_url( $slugs, $titles, $fallback ) {
+	foreach ( (array) $slugs as $slug ) {
+		$page = get_page_by_path( $slug );
+		if ( $page instanceof WP_Post && 'publish' === $page->post_status ) {
+			return get_permalink( $page );
+		}
+	}
+
+	foreach ( (array) $titles as $title ) {
+		$ids = get_posts(
+			array(
+				'post_type'      => 'page',
+				'post_status'    => 'publish',
+				'title'          => $title,
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+			)
+		);
+		if ( ! empty( $ids ) ) {
+			return get_permalink( $ids[0] );
+		}
+	}
+
+	return home_url( $fallback );
 }
 
 /**
@@ -646,6 +686,19 @@ function whl_get_fab_order() {
  */
 function whl_get_fab_items() {
 	$items = array();
+
+	// GrowSet Configurator: pagina "Stel jouw GrowSet samen". Knippert om aandacht te trekken.
+	$items['growset'] = array(
+		'label' => __( 'GrowSet Configuratoren', 'woo-header-link' ),
+		'url'   => whl_get_page_url( array( 'growset-configurator' ), array( 'Stel jouw GrowSet samen' ), '/growset-configurator/' ),
+		'blink' => true,
+	);
+
+	// Kweeksets: pagina "Kweeksets".
+	$items['kweeksets'] = array(
+		'label' => __( 'Kweeksets', 'woo-header-link' ),
+		'url'   => whl_get_page_url( array( 'kweeksets' ), array( 'Kweeksets' ), '/kweeksets/' ),
+	);
 
 	// Contact: gewone pagina.
 	$items['contact'] = array(
@@ -723,7 +776,6 @@ function whl_get_fab_categories() {
 			// WooCommerce-volgorde (sleeporde in Producten > Categorieën).
 			'orderby'    => 'menu_order',
 			'order'      => 'ASC',
-			'number'     => $max > 0 ? $max : 0,
 		)
 	);
 
@@ -731,8 +783,19 @@ function whl_get_fab_categories() {
 		return array();
 	}
 
+	// Verberg de standaard "Geen categorie"-term van WooCommerce.
+	$default_cat    = (int) get_option( 'default_product_cat', 0 );
+	$excluded_slugs = array( 'geen-categorie', 'uncategorized' );
+
 	$categories = array();
 	foreach ( $terms as $term ) {
+		if ( $default_cat && (int) $term->term_id === $default_cat ) {
+			continue;
+		}
+		if ( in_array( $term->slug, $excluded_slugs, true ) ) {
+			continue;
+		}
+
 		$link = get_term_link( $term );
 		if ( is_wp_error( $link ) ) {
 			continue;
@@ -741,6 +804,10 @@ function whl_get_fab_categories() {
 			'label' => $term->name,
 			'url'   => $link,
 		);
+
+		if ( $max > 0 && count( $categories ) >= $max ) {
+			break;
+		}
 	}
 
 	/**
@@ -791,8 +858,13 @@ function whl_render_fab() {
 						);
 					}
 				} elseif ( isset( $items[ $whl_token ] ) ) {
+					$whl_item_classes = 'whl-fab__item';
+					if ( ! empty( $items[ $whl_token ]['blink'] ) ) {
+						$whl_item_classes .= ' whl-fab__item--blink';
+					}
 					printf(
-						'<a class="whl-fab__item" role="menuitem" href="%1$s">%2$s</a>',
+						'<a class="%1$s" role="menuitem" href="%2$s">%3$s</a>',
+						esc_attr( $whl_item_classes ),
 						esc_url( $items[ $whl_token ]['url'] ),
 						esc_html( $items[ $whl_token ]['label'] )
 					);

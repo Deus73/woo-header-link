@@ -4,7 +4,7 @@ Tags: woocommerce, header, link, image, logo
 Requires at least: 5.6
 Tested up to: 6.7
 Requires PHP: 7.2
-Stable tag: 1.2.4
+Stable tag: 1.2.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,6 +29,7 @@ Kenmerken:
 * De zwevende knop is met muis of vinger te verslepen en blijft altijd binnen het scherm.
 * WooCommerce-productcategorieën bovenaan het menu (aantal instelbaar).
 * De volgorde van de menu-items is vrij te bepalen met een sleepbare lijst in het beheer.
+* Extra vaste items vooraan: "GrowSet Configuratoren" (knippert) en "Kweeksets".
 
 == Installation ==
 
@@ -49,6 +50,11 @@ in een HTML-blok of header-widget. Bekijk de `header.php` van je thema voor besc
 Ja, vink "Alleen tonen op WooCommerce-pagina's" aan.
 
 == Changelog ==
+
+= 1.2.5 =
+* Nieuw menu-item "GrowSet Configuratoren" helemaal bovenaan, met knipperende animatie.
+* Nieuw menu-item "Kweeksets" onder "GrowSet Configuratoren".
+* De categorie "Geen categorie" wordt niet meer in het menu getoond.
 
 = 1.2.4 =
 * Menu-item "Onze Locatie" weer verwijderd.

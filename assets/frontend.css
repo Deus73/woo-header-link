@@ -175,6 +175,31 @@
 	font-weight: 600;
 }
 
+/* Knipperend item om extra aandacht te trekken (bijv. GrowSet Configurator). */
+.whl-fab__item--blink {
+	animation: whl-fab-blink 1.1s ease-in-out infinite;
+}
+
+@keyframes whl-fab-blink {
+	0%,
+	100% {
+		background: #fff;
+		color: #1e1e1e;
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+	}
+	50% {
+		background: #ffd400;
+		color: #1e1e1e;
+		box-shadow: 0 0 0 3px rgba(255, 212, 0, 0.6), 0 4px 14px rgba(0, 0, 0, 0.2);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.whl-fab__item--blink {
+		animation: none;
+	}
+}
+
 .whl-fab--open .whl-fab__item {
 	opacity: 1;
 	transform: translateY(0);
