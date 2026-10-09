@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name:       Woo Header Link
- * Plugin URI:        https://example.com/woo-header-link
+ * Plugin URI:        https://github.com/Deus73/woo-header-link
  * Description:       Zet een klikbare afbeelding of link in de linkerbovenhoek van je (WooCommerce) site. Opent in een nieuw venster en is volledig in te stellen via Instellingen.
  * Version:           1.0.0
- * Author:            Jouw Naam
- * Author URI:        https://example.com
+ * Author:            Deus Dust
+ * Author URI:        https://github.com/Deus73
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       woo-header-link

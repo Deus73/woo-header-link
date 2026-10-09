@@ -1,5 +1,5 @@
 === Woo Header Link ===
-Contributors: jouwnaam
+Contributors: Deus Dust
 Tags: woocommerce, header, link, image, logo
 Requires at least: 5.6
 Tested up to: 6.7
