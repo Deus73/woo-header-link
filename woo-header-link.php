@@ -3,7 +3,7 @@
  * Plugin Name:       Woo Header Link
  * Plugin URI:        https://github.com/Deus73/woo-header-link
  * Description:       Zet een klikbare afbeelding of link in de linkerbovenhoek van je (WooCommerce) site. Opent in een nieuw venster en is volledig in te stellen via Instellingen.
- * Version:           1.2.1
+ * Version:           1.2.2
  * Author:            Deus Dust
  * Author URI:        https://github.com/Deus73
  * License:           GPL-2.0-or-later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Geen directe toegang.
 }
 
-define( 'WHL_VERSION', '1.2.1' );
+define( 'WHL_VERSION', '1.2.2' );
 define( 'WHL_FILE', __FILE__ );
 define( 'WHL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WHL_URL', plugin_dir_url( __FILE__ ) );
@@ -637,6 +637,41 @@ function whl_get_fab_order() {
 }
 
 /**
+ * Zoek de URL van een pagina op slug of titel.
+ *
+ * @param array  $slugs    Mogelijke slugs (zonder slash).
+ * @param array  $titles   Mogelijke paginatitels.
+ * @param string $fallback Pad dat gebruikt wordt als de pagina niet bestaat.
+ * @return string
+ */
+function whl_get_page_url( $slugs, $titles, $fallback ) {
+	foreach ( (array) $slugs as $slug ) {
+		$page = get_page_by_path( $slug );
+		if ( $page instanceof WP_Post && 'publish' === $page->post_status ) {
+			return get_permalink( $page );
+		}
+	}
+
+	foreach ( (array) $titles as $title ) {
+		$ids = get_posts(
+			array(
+				'post_type'      => 'page',
+				'post_status'    => 'publish',
+				'title'          => $title,
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+			)
+		);
+		if ( ! empty( $ids ) ) {
+			return get_permalink( $ids[0] );
+		}
+	}
+
+	return home_url( $fallback );
+}
+
+/**
  * Bepaal de items van het zwevende menu (vaste WooCommerce-links).
  *
  * De URL's worden waar mogelijk via WooCommerce opgehaald, met een
@@ -653,10 +688,10 @@ function whl_get_fab_items() {
 		'url'   => home_url( '/contact/' ),
 	);
 
-	// Onze Lokatie: gewone pagina.
+	// Onze Lokatie: link naar de pagina "Onze Lokatie".
 	$items['locatie'] = array(
 		'label' => __( 'Onze Lokatie', 'woo-header-link' ),
-		'url'   => home_url( '/onze-lokatie/' ),
+		'url'   => whl_get_page_url( array( 'onze-lokatie' ), array( 'Onze Lokatie', 'Onze lokatie' ), '/onze-lokatie/' ),
 	);
 
 	// Winkelwagen.

@@ -4,7 +4,7 @@ Tags: woocommerce, header, link, image, logo
 Requires at least: 5.6
 Tested up to: 6.7
 Requires PHP: 7.2
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,6 +49,9 @@ in een HTML-blok of header-widget. Bekijk de `header.php` van je thema voor besc
 Ja, vink "Alleen tonen op WooCommerce-pagina's" aan.
 
 == Changelog ==
+
+= 1.2.2 =
+* "Onze Lokatie" linkt nu naar de echte pagina (op slug of titel), met terugval op /onze-lokatie/ als de pagina niet bestaat.
 
 = 1.2.1 =
 * Nieuw menu-item "Onze Lokatie", direct onder "Contact". Nieuwe items schuiven op bestaande installaties automatisch op de juiste plek in.
