@@ -3,7 +3,7 @@
  * Plugin Name:       Woo Header Link
  * Plugin URI:        https://github.com/Deus73/woo-header-link
  * Description:       Zet een klikbare afbeelding of link in de linkerbovenhoek van je (WooCommerce) site. Opent in een nieuw venster en is volledig in te stellen via Instellingen.
- * Version:           1.1.0
+ * Version:           1.1.1
  * Author:            Deus Dust
  * Author URI:        https://github.com/Deus73
  * License:           GPL-2.0-or-later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Geen directe toegang.
 }
 
-define( 'WHL_VERSION', '1.1.0' );
+define( 'WHL_VERSION', '1.1.1' );
 define( 'WHL_FILE', __FILE__ );
 define( 'WHL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WHL_URL', plugin_dir_url( __FILE__ ) );
@@ -51,6 +51,8 @@ function whl_defaults() {
 		'fab_corner'     => 'br',
 		'fab_offset'     => 20,
 		'fab_hide_mobile' => 0,
+		'fab_show_categories' => 1,
+		'fab_cat_max'         => 8,
 	);
 }
 
@@ -145,6 +147,8 @@ function whl_sanitize_settings( $input ) {
 	$allowed_corners          = array( 'br', 'bl', 'tr', 'tl' );
 	$clean['fab_corner']      = ( isset( $input['fab_corner'] ) && in_array( $input['fab_corner'], $allowed_corners, true ) ) ? $input['fab_corner'] : 'br';
 	$clean['fab_offset']      = isset( $input['fab_offset'] ) ? max( 0, min( 500, absint( $input['fab_offset'] ) ) ) : 20;
+	$clean['fab_show_categories'] = empty( $input['fab_show_categories'] ) ? 0 : 1;
+	$clean['fab_cat_max']         = isset( $input['fab_cat_max'] ) ? max( 0, min( 50, absint( $input['fab_cat_max'] ) ) ) : 8;
 
 	return $clean;
 }
@@ -366,14 +370,40 @@ function whl_render_settings_page() {
 					</td>
 				</tr>
 				<tr>
+					<th scope="row"><?php echo esc_html__( 'Winkelcategorieën', 'woo-header-link' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="whl_settings[fab_show_categories]" value="1" <?php checked( 1, $opts['fab_show_categories'] ); ?> />
+							<?php echo esc_html__( 'WooCommerce-productcategorieën bovenaan het menu tonen', 'woo-header-link' ); ?>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="whl_fab_cat_max"><?php echo esc_html__( 'Max. categorieën', 'woo-header-link' ); ?></label></th>
+					<td>
+						<input type="number" id="whl_fab_cat_max" name="whl_settings[fab_cat_max]" value="<?php echo esc_attr( $opts['fab_cat_max'] ); ?>" min="0" max="50" step="1" class="small-text" />
+						<p class="description"><?php echo esc_html__( '0 = alle bovenliggende categorieën tonen. Alleen categorieën zonder bovenliggende categorie worden getoond.', 'woo-header-link' ); ?></p>
+					</td>
+				</tr>
+				<tr>
 					<th scope="row"><?php echo esc_html__( 'Menu-items', 'woo-header-link' ); ?></th>
 					<td>
+						<?php $whl_cats = whl_get_fab_categories(); ?>
+						<?php if ( ! empty( $whl_cats ) ) : ?>
+							<p><strong><?php echo esc_html__( 'Categorieën bovenaan:', 'woo-header-link' ); ?></strong></p>
+							<ul class="whl-fab-list">
+								<?php foreach ( $whl_cats as $whl_cat ) : ?>
+									<li><strong><?php echo esc_html( $whl_cat['label'] ); ?></strong> &mdash; <code><?php echo esc_html( $whl_cat['url'] ); ?></code></li>
+								<?php endforeach; ?>
+							</ul>
+						<?php endif; ?>
+						<p><strong><?php echo esc_html__( 'Vaste links:', 'woo-header-link' ); ?></strong></p>
 						<ul class="whl-fab-list">
 							<?php foreach ( whl_get_fab_items() as $whl_item ) : ?>
 								<li><strong><?php echo esc_html( $whl_item['label'] ); ?></strong> &mdash; <code><?php echo esc_html( $whl_item['url'] ); ?></code></li>
 							<?php endforeach; ?>
 						</ul>
-						<p class="description"><?php echo esc_html__( 'Deze links zijn vastgekoppeld aan WooCommerce. Pas ze aan met de filter whl_fab_items in je thema of een snippet.', 'woo-header-link' ); ?></p>
+						<p class="description"><?php echo esc_html__( 'De categorieën komen uit WooCommerce. De vaste links zijn aanpasbaar met de filters whl_fab_categories en whl_fab_items in je thema of een snippet.', 'woo-header-link' ); ?></p>
 					</td>
 				</tr>
 			</table>
@@ -580,6 +610,61 @@ function whl_get_fab_items() {
 }
 
 /**
+ * Haal de WooCommerce-productcategorieën op voor bovenin het menu.
+ *
+ * Alleen bovenliggende categorieën, gesorteerd op naam. Aan te passen met
+ * de filter whl_fab_categories.
+ *
+ * @return array
+ */
+function whl_get_fab_categories() {
+	if ( ! taxonomy_exists( 'product_cat' ) ) {
+		return array();
+	}
+
+	$opts = whl_get_options();
+	if ( empty( $opts['fab_show_categories'] ) ) {
+		return array();
+	}
+
+	$max = (int) $opts['fab_cat_max'];
+
+	$terms = get_terms(
+		array(
+			'taxonomy'   => 'product_cat',
+			'hide_empty' => false,
+			'parent'     => 0,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
+			'number'     => $max > 0 ? $max : 0,
+		)
+	);
+
+	if ( is_wp_error( $terms ) || empty( $terms ) ) {
+		return array();
+	}
+
+	$categories = array();
+	foreach ( $terms as $term ) {
+		$link = get_term_link( $term );
+		if ( is_wp_error( $link ) ) {
+			continue;
+		}
+		$categories[] = array(
+			'label' => $term->name,
+			'url'   => $link,
+		);
+	}
+
+	/**
+	 * Filter de categorieën bovenaan het zwevende menu.
+	 *
+	 * @param array $categories Lijst met label/url paren.
+	 */
+	return apply_filters( 'whl_fab_categories', $categories );
+}
+
+/**
  * Render het zwevende menu in de footer.
  */
 function whl_render_fab() {
@@ -589,8 +674,9 @@ function whl_render_fab() {
 		return;
 	}
 
-	$items = whl_get_fab_items();
-	if ( empty( $items ) ) {
+	$items      = whl_get_fab_items();
+	$categories = whl_get_fab_categories();
+	if ( empty( $items ) && empty( $categories ) ) {
 		return;
 	}
 
@@ -607,6 +693,12 @@ function whl_render_fab() {
 	?>
 	<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" id="whl-fab" style="<?php echo esc_attr( $style ); ?>">
 		<div class="whl-fab__menu" id="whl-fab-menu" role="menu" aria-hidden="true">
+			<?php if ( ! empty( $categories ) ) : ?>
+				<?php foreach ( $categories as $category ) : ?>
+					<a class="whl-fab__item whl-fab__item--cat" role="menuitem" href="<?php echo esc_url( $category['url'] ); ?>"><?php echo esc_html( $category['label'] ); ?></a>
+				<?php endforeach; ?>
+				<span class="whl-fab__divider" aria-hidden="true"></span>
+			<?php endif; ?>
 			<?php foreach ( $items as $item ) : ?>
 				<a class="whl-fab__item" role="menuitem" href="<?php echo esc_url( $item['url'] ); ?>"><?php echo esc_html( $item['label'] ); ?></a>
 			<?php endforeach; ?>
@@ -617,7 +709,7 @@ function whl_render_fab() {
 	</div>
 	<?php
 }
-add_action( 'wp_footer', 'whl_render_fab', 99 );
+add_action( 'wp_footer', 'whl_render_fab', 10 );
 
 
 /**
