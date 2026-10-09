@@ -3,7 +3,7 @@
  * Plugin Name:       Woo Header Link
  * Plugin URI:        https://github.com/Deus73/woo-header-link
  * Description:       Zet een klikbare afbeelding of link in de linkerbovenhoek van je (WooCommerce) site. Opent in een nieuw venster en is volledig in te stellen via Instellingen.
- * Version:           1.2.5
+ * Version:           1.2.6
  * Author:            Deus Dust
  * Author URI:        https://github.com/Deus73
  * License:           GPL-2.0-or-later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Geen directe toegang.
 }
 
-define( 'WHL_VERSION', '1.2.5' );
+define( 'WHL_VERSION', '1.2.6' );
 define( 'WHL_FILE', __FILE__ );
 define( 'WHL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WHL_URL', plugin_dir_url( __FILE__ ) );
@@ -689,7 +689,7 @@ function whl_get_fab_items() {
 
 	// GrowSet Configurator: pagina "Stel jouw GrowSet samen". Knippert om aandacht te trekken.
 	$items['growset'] = array(
-		'label' => __( 'GrowSet Configuratoren', 'woo-header-link' ),
+		'label' => __( 'GrowSet Configurator', 'woo-header-link' ),
 		'url'   => whl_get_page_url( array( 'growset-configurator' ), array( 'Stel jouw GrowSet samen' ), '/growset-configurator/' ),
 		'blink' => true,
 	);
