@@ -3,7 +3,7 @@
  * Plugin Name:       Woo Header Link
  * Plugin URI:        https://github.com/Deus73/woo-header-link
  * Description:       Zet een klikbare afbeelding of link in de linkerbovenhoek van je (WooCommerce) site. Opent in een nieuw venster en is volledig in te stellen via Instellingen.
- * Version:           1.2.7
+ * Version:           1.2.8
  * Author:            Deus Dust
  * Author URI:        https://github.com/Deus73
  * License:           GPL-2.0-or-later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Geen directe toegang.
 }
 
-define( 'WHL_VERSION', '1.2.7' );
+define( 'WHL_VERSION', '1.2.8' );
 define( 'WHL_FILE', __FILE__ );
 define( 'WHL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WHL_URL', plugin_dir_url( __FILE__ ) );
@@ -53,7 +53,7 @@ function whl_defaults() {
 		'fab_hide_mobile' => 0,
 		'fab_show_categories' => 1,
 		'fab_cat_max'         => 8,
-		'fab_order'           => array( 'growset', 'kweeksets', 'cat', 'contact', 'cart', 'account', 'links', 'bobby' ),
+		'fab_order'           => array( 'growset', 'kweeksets', 'cat', 'contact', 'locatie', 'cart', 'account', 'links', 'bobby' ),
 	);
 }
 
@@ -581,7 +581,7 @@ add_shortcode( 'header_link', 'whl_shortcode' );
  * @return array
  */
 function whl_fab_default_order() {
-	return array( 'growset', 'kweeksets', 'cat', 'contact', 'cart', 'account', 'links', 'bobby' );
+	return array( 'growset', 'kweeksets', 'cat', 'contact', 'locatie', 'cart', 'account', 'links', 'bobby' );
 }
 
 /**
@@ -704,6 +704,12 @@ function whl_get_fab_items() {
 	$items['contact'] = array(
 		'label' => __( 'Contact', 'woo-header-link' ),
 		'url'   => home_url( '/contact/' ),
+	);
+
+	// Onze Locatie: link naar de pagina "Onze Locatie".
+	$items['locatie'] = array(
+		'label' => __( 'Onze Locatie', 'woo-header-link' ),
+		'url'   => whl_get_page_url( array( 'onze-locatie', 'onze-lokatie' ), array( 'Onze Locatie', 'Onze locatie' ), '/onze-locatie/' ),
 	);
 
 	// Winkelwagen.
