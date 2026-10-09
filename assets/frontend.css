@@ -1,0 +1,44 @@
+/* Woo Header Link - front-end */
+.whl-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	line-height: 0;
+	text-decoration: none;
+}
+
+.whl-link .whl-text {
+	line-height: 1.2;
+	font-size: 14px;
+}
+
+.whl-link img {
+	max-width: 100%;
+	border: 0;
+}
+
+/* Zwevend of absoluut gepositioneerd. */
+.whl-link.whl-fixed,
+.whl-link.whl-absolute {
+	margin: 0;
+}
+
+.whl-link.whl-fixed:hover img,
+.whl-link.whl-absolute:hover img {
+	opacity: 0.85;
+}
+
+.whl-link img {
+	transition: opacity 0.15s ease-in-out;
+}
+
+/* Widget/inline variant. */
+.whl-link.whl-inline {
+	display: inline-flex;
+}
+
+@media (max-width: 767px) {
+	.whl-link.whl-hide-mobile {
+		display: none !important;
+	}
+}
