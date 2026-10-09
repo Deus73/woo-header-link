@@ -3,7 +3,7 @@
  * Plugin Name:       Woo Header Link
  * Plugin URI:        https://github.com/Deus73/woo-header-link
  * Description:       Zet een klikbare afbeelding of link in de linkerbovenhoek van je (WooCommerce) site. Opent in een nieuw venster en is volledig in te stellen via Instellingen.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            Deus Dust
  * Author URI:        https://github.com/Deus73
  * License:           GPL-2.0-or-later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Geen directe toegang.
 }
 
-define( 'WHL_VERSION', '1.0.0' );
+define( 'WHL_VERSION', '1.1.0' );
 define( 'WHL_FILE', __FILE__ );
 define( 'WHL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WHL_URL', plugin_dir_url( __FILE__ ) );
@@ -46,6 +46,11 @@ function whl_defaults() {
 		'z_index'        => 9999,
 		'custom_class'   => '',
 		'hide_on_mobile' => 0,
+		// Zwevend menu.
+		'fab_enabled'    => 0,
+		'fab_corner'     => 'br',
+		'fab_offset'     => 20,
+		'fab_hide_mobile' => 0,
 	);
 }
 
@@ -133,6 +138,13 @@ function whl_sanitize_settings( $input ) {
 	$clean['offset_left']    = isset( $input['offset_left'] ) ? max( 0, min( 2000, absint( $input['offset_left'] ) ) ) : 8;
 	$clean['z_index']        = isset( $input['z_index'] ) ? max( 0, min( 1000000, absint( $input['z_index'] ) ) ) : 9999;
 	$clean['custom_class']   = isset( $input['custom_class'] ) ? sanitize_html_class( $input['custom_class'] ) : '';
+
+	// Zwevend menu.
+	$clean['fab_enabled']     = empty( $input['fab_enabled'] ) ? 0 : 1;
+	$clean['fab_hide_mobile'] = empty( $input['fab_hide_mobile'] ) ? 0 : 1;
+	$allowed_corners          = array( 'br', 'bl', 'tr', 'tl' );
+	$clean['fab_corner']      = ( isset( $input['fab_corner'] ) && in_array( $input['fab_corner'], $allowed_corners, true ) ) ? $input['fab_corner'] : 'br';
+	$clean['fab_offset']      = isset( $input['fab_offset'] ) ? max( 0, min( 500, absint( $input['fab_offset'] ) ) ) : 20;
 
 	return $clean;
 }
@@ -313,6 +325,59 @@ function whl_render_settings_page() {
 				</tr>
 			</table>
 
+			<h2><?php echo esc_html__( 'Zwevend menu', 'woo-header-link' ); ?></h2>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php echo esc_html__( 'Inschakelen', 'woo-header-link' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="whl_settings[fab_enabled]" value="1" <?php checked( 1, $opts['fab_enabled'] ); ?> />
+							<?php echo esc_html__( 'Zwevende menuknop tonen', 'woo-header-link' ); ?>
+						</label>
+						<p class="description"><?php echo esc_html__( 'Een ronde knop die je in de front-end kunt verslepen. De knop blijft altijd binnen het scherm.', 'woo-header-link' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="whl_fab_corner"><?php echo esc_html__( 'Startpositie', 'woo-header-link' ); ?></label></th>
+					<td>
+						<select id="whl_fab_corner" name="whl_settings[fab_corner]">
+							<option value="br" <?php selected( 'br', $opts['fab_corner'] ); ?>><?php echo esc_html__( 'Rechtsonder', 'woo-header-link' ); ?></option>
+							<option value="bl" <?php selected( 'bl', $opts['fab_corner'] ); ?>><?php echo esc_html__( 'Linksonder', 'woo-header-link' ); ?></option>
+							<option value="tr" <?php selected( 'tr', $opts['fab_corner'] ); ?>><?php echo esc_html__( 'Rechtsboven', 'woo-header-link' ); ?></option>
+							<option value="tl" <?php selected( 'tl', $opts['fab_corner'] ); ?>><?php echo esc_html__( 'Linksboven', 'woo-header-link' ); ?></option>
+						</select>
+						<p class="description"><?php echo esc_html__( 'De positie die de bezoeker ziet voordat hij de knop zelf versleept. De versleepte positie wordt per browser onthouden.', 'woo-header-link' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="whl_fab_offset"><?php echo esc_html__( 'Afstand (px)', 'woo-header-link' ); ?></label></th>
+					<td>
+						<input type="number" id="whl_fab_offset" name="whl_settings[fab_offset]" value="<?php echo esc_attr( $opts['fab_offset'] ); ?>" min="0" max="500" step="1" class="small-text" />
+						<p class="description"><?php echo esc_html__( 'Afstand tot de schermrand in de startpositie.', 'woo-header-link' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php echo esc_html__( 'Mobiel', 'woo-header-link' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="whl_settings[fab_hide_mobile]" value="1" <?php checked( 1, $opts['fab_hide_mobile'] ); ?> />
+							<?php echo esc_html__( 'Verbergen op mobiel (scherm < 768px)', 'woo-header-link' ); ?>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php echo esc_html__( 'Menu-items', 'woo-header-link' ); ?></th>
+					<td>
+						<ul class="whl-fab-list">
+							<?php foreach ( whl_get_fab_items() as $whl_item ) : ?>
+								<li><strong><?php echo esc_html( $whl_item['label'] ); ?></strong> &mdash; <code><?php echo esc_html( $whl_item['url'] ); ?></code></li>
+							<?php endforeach; ?>
+						</ul>
+						<p class="description"><?php echo esc_html__( 'Deze links zijn vastgekoppeld aan WooCommerce. Pas ze aan met de filter whl_fab_items in je thema of een snippet.', 'woo-header-link' ); ?></p>
+					</td>
+				</tr>
+			</table>
+
 			<?php submit_button(); ?>
 		</form>
 
@@ -451,6 +516,110 @@ function whl_shortcode( $atts ) {
 }
 add_shortcode( 'header_link', 'whl_shortcode' );
 
+/* -------------------------------------------------------------------------
+ *  Front-end: zwevend menu
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Bepaal de items van het zwevende menu (vaste WooCommerce-links).
+ *
+ * De URL's worden waar mogelijk via WooCommerce opgehaald, met een
+ * terugvaloptie op het pad. Aan te passen met de filter whl_fab_items.
+ *
+ * @return array
+ */
+function whl_get_fab_items() {
+	$items = array();
+
+	// Contact: gewone pagina.
+	$items['contact'] = array(
+		'label' => __( 'Contact', 'woo-header-link' ),
+		'url'   => home_url( '/contact/' ),
+	);
+
+	// Winkelwagen.
+	$items['cart'] = array(
+		'label' => __( 'Winkelwagen', 'woo-header-link' ),
+		'url'   => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/cart/' ),
+	);
+
+	// Account.
+	$items['account'] = array(
+		'label' => __( 'Account', 'woo-header-link' ),
+		'url'   => function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : home_url( '/my-account/' ),
+	);
+
+	// Links: gewone pagina.
+	$items['links'] = array(
+		'label' => __( 'Links', 'woo-header-link' ),
+		'url'   => home_url( '/links/' ),
+	);
+
+	// Bobby: WooCommerce-productcategorie indien aanwezig, anders pagina.
+	$bobby_url = home_url( '/bobby/' );
+	if ( taxonomy_exists( 'product_cat' ) ) {
+		$term = get_term_by( 'slug', 'bobby', 'product_cat' );
+		if ( $term && ! is_wp_error( $term ) ) {
+			$term_link = get_term_link( $term );
+			if ( ! is_wp_error( $term_link ) ) {
+				$bobby_url = $term_link;
+			}
+		}
+	}
+	$items['bobby'] = array(
+		'label' => __( 'Bobby', 'woo-header-link' ),
+		'url'   => $bobby_url,
+	);
+
+	/**
+	 * Filter de items van het zwevende menu.
+	 *
+	 * @param array $items Lijst met label/url paren.
+	 */
+	return apply_filters( 'whl_fab_items', $items );
+}
+
+/**
+ * Render het zwevende menu in de footer.
+ */
+function whl_render_fab() {
+	$opts = whl_get_options();
+
+	if ( empty( $opts['fab_enabled'] ) ) {
+		return;
+	}
+
+	$items = whl_get_fab_items();
+	if ( empty( $items ) ) {
+		return;
+	}
+
+	$classes = array( 'whl-fab', 'whl-fab--' . $opts['fab_corner'] );
+	if ( ! empty( $opts['fab_hide_mobile'] ) ) {
+		$classes[] = 'whl-fab--hide-mobile';
+	}
+
+	$style = sprintf(
+		'z-index:%1$d;--whl-fab-offset:%2$dpx;',
+		(int) $opts['z_index'] + 1,
+		(int) $opts['fab_offset']
+	);
+	?>
+	<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" id="whl-fab" style="<?php echo esc_attr( $style ); ?>">
+		<div class="whl-fab__menu" id="whl-fab-menu" role="menu" aria-hidden="true">
+			<?php foreach ( $items as $item ) : ?>
+				<a class="whl-fab__item" role="menuitem" href="<?php echo esc_url( $item['url'] ); ?>"><?php echo esc_html( $item['label'] ); ?></a>
+			<?php endforeach; ?>
+		</div>
+		<button type="button" class="whl-fab__toggle" id="whl-fab-toggle" aria-expanded="false" aria-controls="whl-fab-menu" aria-label="<?php esc_attr_e( 'Menu', 'woo-header-link' ); ?>">
+			<span class="whl-fab__bars" aria-hidden="true"><span></span><span></span><span></span></span>
+		</button>
+	</div>
+	<?php
+}
+add_action( 'wp_footer', 'whl_render_fab', 99 );
+
+
 /**
  * Laad de front-end CSS.
  */
@@ -464,6 +633,11 @@ function whl_frontend_assets() {
 	}
 	if ( $inline_css ) {
 		wp_add_inline_style( 'whl-frontend', $inline_css );
+	}
+
+	// Sleepscript alleen laden als het zwevende menu actief is.
+	if ( ! empty( $opts['fab_enabled'] ) ) {
+		wp_enqueue_script( 'whl-frontend', WHL_URL . 'assets/frontend.js', array(), WHL_VERSION, true );
 	}
 }
 add_action( 'wp_enqueue_scripts', 'whl_frontend_assets' );
