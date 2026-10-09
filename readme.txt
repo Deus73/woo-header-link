@@ -4,7 +4,7 @@ Tags: woocommerce, header, link, image, logo
 Requires at least: 5.6
 Tested up to: 6.7
 Requires PHP: 7.2
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,6 +28,7 @@ Kenmerken:
 * Zwevende menuknop met vaste WooCommerce-links (Contact, Winkelwagen, Account, Links, Bobby).
 * De zwevende knop is met muis of vinger te verslepen en blijft altijd binnen het scherm.
 * WooCommerce-productcategorieën bovenaan het menu (aantal instelbaar).
+* De volgorde van de menu-items is vrij te bepalen met een sleepbare lijst in het beheer.
 
 == Installation ==
 
@@ -48,6 +49,10 @@ in een HTML-blok of header-widget. Bekijk de `header.php` van je thema voor besc
 Ja, vink "Alleen tonen op WooCommerce-pagina's" aan.
 
 == Changelog ==
+
+= 1.2.0 =
+* De menu-items (categorieën én vaste links) zijn vrij te ordenen met een sleepbare lijst in het beheer.
+* Categorieën volgen de sorteervolgorde uit WooCommerce > Producten > Categorieën.
 
 = 1.1.1 =
 * WooCommerce-productcategorieën bovenaan het zwevende menu (aan/uit en maximum instelbaar).

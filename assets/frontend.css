@@ -175,13 +175,6 @@
 	font-weight: 600;
 }
 
-.whl-fab__divider {
-	display: block;
-	height: 1px;
-	margin: 2px 6px;
-	background: rgba(0, 0, 0, 0.12);
-}
-
 .whl-fab--open .whl-fab__item {
 	opacity: 1;
 	transform: translateY(0);

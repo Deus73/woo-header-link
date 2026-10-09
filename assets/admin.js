@@ -61,5 +61,31 @@
 
 		$position.on( 'change', toggleOffsets );
 		toggleOffsets();
+
+		// Zwevend menu: items versleepbaar maken en de volgorde opslaan.
+		var $sortable = $( '#whl-fab-sortable' );
+		var $order    = $( '#whl-fab-order' );
+
+		function syncOrder() {
+			var tokens = $sortable.find( 'li' ).map( function () {
+				return $( this ).data( 'token' );
+			} ).get();
+
+			$order.val( tokens.join( ',' ) );
+		}
+
+		if ( $sortable.length && $order.length && typeof $sortable.sortable === 'function' ) {
+			$sortable.sortable( {
+				items: '> li',
+				handle: '.whl-fab-sortable__handle',
+				axis: 'y',
+				cursor: 'move',
+				opacity: 0.8,
+				placeholder: 'whl-fab-sortable__placeholder',
+				forcePlaceholderSize: true,
+				update: syncOrder,
+			} );
+			syncOrder();
+		}
 	} );
 } )( jQuery );
