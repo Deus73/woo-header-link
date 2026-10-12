@@ -4,7 +4,7 @@ Tags: woocommerce, header, link, image, logo
 Requires at least: 5.6
 Tested up to: 6.7
 Requires PHP: 7.2
-Stable tag: 1.2.9
+Stable tag: 1.2.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,6 +50,9 @@ in een HTML-blok of header-widget. Bekijk de `header.php` van je thema voor besc
 Ja, vink "Alleen tonen op WooCommerce-pagina's" aan.
 
 == Changelog ==
+
+= 1.2.10 =
+* GrowSet Configurator, Kweeksets en de categorieën tot en met "Voeding & Additieven" zijn vetgedrukt in het zwevende menu.
 
 = 1.2.9 =
 * Logo van De Heksenketel onderaan het zwevende menu, direct onder "Bobby Helpdesk". Linkt naar deheksenketel.com.

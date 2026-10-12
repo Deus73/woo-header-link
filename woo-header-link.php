@@ -3,7 +3,7 @@
  * Plugin Name:       Woo Header Link
  * Plugin URI:        https://github.com/Deus73/woo-header-link
  * Description:       Zet een klikbare afbeelding of link in de linkerbovenhoek van je (WooCommerce) site. Opent in een nieuw venster en is volledig in te stellen via Instellingen.
- * Version:           1.2.9
+ * Version:           1.2.10
  * Author:            Deus Dust
  * Author URI:        https://github.com/Deus73
  * License:           GPL-2.0-or-later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Geen directe toegang.
 }
 
-define( 'WHL_VERSION', '1.2.9' );
+define( 'WHL_VERSION', '1.2.10' );
 define( 'WHL_FILE', __FILE__ );
 define( 'WHL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WHL_URL', plugin_dir_url( __FILE__ ) );
@@ -692,12 +692,14 @@ function whl_get_fab_items() {
 		'label' => __( 'GrowSet Configurator', 'woo-header-link' ),
 		'url'   => whl_get_page_url( array( 'growset-configurator' ), array( 'Stel jouw GrowSet samen' ), '/growset-configurator/' ),
 		'blink' => true,
+		'bold'  => true,
 	);
 
 	// Kweeksets: pagina "Kweeksets".
 	$items['kweeksets'] = array(
 		'label' => __( 'Kweeksets', 'woo-header-link' ),
 		'url'   => whl_get_page_url( array( 'kweeksets' ), array( 'Kweeksets' ), '/kweeksets/' ),
+		'bold'  => true,
 	);
 
 	// Contact: gewone pagina.
@@ -816,6 +818,17 @@ function whl_get_fab_categories() {
 		}
 	}
 
+	// Categorieën tot en met "Voeding & Additieven" worden vetgedrukt.
+	$bold_until = -1;
+	foreach ( $categories as $index => $category ) {
+		if ( in_array( strtolower( trim( html_entity_decode( $category['label'] ) ) ), array( 'voeding & additieven', 'voeding en additieven' ), true ) ) {
+			$bold_until = $index;
+		}
+	}
+	foreach ( $categories as $index => $category ) {
+		$categories[ $index ]['bold'] = ( $index <= $bold_until );
+	}
+
 	/**
 	 * Filter de categorieën bovenaan het zwevende menu.
 	 *
@@ -858,13 +871,17 @@ function whl_render_fab() {
 				if ( 'cat' === $whl_token ) {
 					foreach ( $categories as $whl_cat ) {
 						printf(
-							'<a class="whl-fab__item whl-fab__item--cat" role="menuitem" href="%1$s">%2$s</a>',
+							'<a class="whl-fab__item%1$s" role="menuitem" href="%2$s">%3$s</a>',
+							$whl_cat['bold'] ? ' whl-fab__item--bold' : '',
 							esc_url( $whl_cat['url'] ),
 							esc_html( $whl_cat['label'] )
 						);
 					}
 				} elseif ( isset( $items[ $whl_token ] ) ) {
 					$whl_item_classes = 'whl-fab__item';
+					if ( ! empty( $items[ $whl_token ]['bold'] ) ) {
+						$whl_item_classes .= ' whl-fab__item--bold';
+					}
 					if ( ! empty( $items[ $whl_token ]['blink'] ) ) {
 						$whl_item_classes .= ' whl-fab__item--blink';
 					}
