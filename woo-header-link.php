@@ -3,7 +3,7 @@
  * Plugin Name:       Woo Header Link
  * Plugin URI:        https://github.com/Deus73/woo-header-link
  * Description:       Zet een klikbare afbeelding of link in de linkerbovenhoek van je (WooCommerce) site. Opent in een nieuw venster en is volledig in te stellen via Instellingen.
- * Version:           1.2.8
+ * Version:           1.2.9
  * Author:            Deus Dust
  * Author URI:        https://github.com/Deus73
  * License:           GPL-2.0-or-later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Geen directe toegang.
 }
 
-define( 'WHL_VERSION', '1.2.8' );
+define( 'WHL_VERSION', '1.2.9' );
 define( 'WHL_FILE', __FILE__ );
 define( 'WHL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WHL_URL', plugin_dir_url( __FILE__ ) );
@@ -876,6 +876,12 @@ function whl_render_fab() {
 					);
 				}
 			}
+			printf(
+				'<a class="whl-fab__logo" role="menuitem" href="%1$s" target="_blank" rel="noopener noreferrer"><img src="%2$s" alt="%3$s" width="41" height="44" loading="lazy" /></a>',
+				esc_url( 'https://deheksenketel.com' ),
+				esc_url( WHL_URL . 'assets/images/heksenketel-logo.webp' ),
+				esc_attr__( 'De Heksenketel', 'woo-header-link' )
+			);
 			?>
 		</div>
 		<button type="button" class="whl-fab__toggle" id="whl-fab-toggle" aria-expanded="false" aria-controls="whl-fab-menu" aria-label="<?php esc_attr_e( 'Menu', 'woo-header-link' ); ?>">
