@@ -2,7 +2,7 @@
 /**
  * Verwijder opgeslagen instellingen bij het verwijderen van de plugin.
  *
- * Alle instellingen (inclusief het zwevende menu) staan in de enkele optie
+ * Alle instellingen staan in de enkele optie
  * "whl_settings". Op multisite wordt de optie per site verwijderd.
  *
  * @package WooHeaderLink
