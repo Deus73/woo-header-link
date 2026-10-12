@@ -72,7 +72,7 @@
 	padding: 0;
 	border: 0;
 	border-radius: 50%;
-	background: #1e1e1e;
+	background: #7a7a7a;
 	color: #fff;
 	cursor: grab;
 	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
@@ -81,7 +81,7 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-.whl-fab__toggle:hover { background: #333; }
+.whl-fab__toggle:hover { background: #5e5e5e; }
 .whl-fab__toggle:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .whl-fab--dragging .whl-fab__toggle { cursor: grabbing; }
 
@@ -156,7 +156,7 @@
 .whl-fab__item {
 	display: block;
 	padding: 10px 16px;
-	background: #fff;
+	background: #d9d9d9;
 	color: #1e1e1e;
 	text-decoration: none;
 	border-radius: 10px;
@@ -183,7 +183,7 @@
 @keyframes whl-fab-blink {
 	0%,
 	100% {
-		background: #fff;
+		background: #d9d9d9;
 		color: #1e1e1e;
 		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 	}
@@ -212,7 +212,7 @@
 	justify-content: center;
 	margin-top: 4px;
 	padding: 8px 16px;
-	background: #fff;
+	background: #d9d9d9;
 	border-radius: 10px;
 	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 	opacity: 0;
@@ -234,12 +234,12 @@
 
 .whl-fab__logo:hover,
 .whl-fab__logo:focus {
-	background: #f2f2f2;
+	background: #c4c4c4;
 }
 
 .whl-fab__item:hover,
 .whl-fab__item:focus {
-	background: #f2f2f2;
+	background: #c4c4c4;
 }
 
 @media (max-width: 767px) {
